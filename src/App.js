@@ -1,10 +1,18 @@
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import TaskCreate from './components/TaskCreate';
 import TaskList from './components/TaskList';
-import { useState } from 'react';
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  // localStorage'dan verileri alma
+  const storedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+  const [tasks, setTasks] = useState(storedTasks);
+
+  useEffect(() => {
+    // tasks state'i değiştiğinde localStorage'a yazma
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
+
   const createTask = (title, taskDesc) => {
     const createdTasks = [
       ...tasks,
@@ -18,18 +26,14 @@ function App() {
   };
 
   const deleteTaskById = (id) => {
-    const afterDeletingTasks = tasks.filter((task) => {
-      return task.id !== id;
-    });
+    const afterDeletingTasks = tasks.filter((task) => task.id !== id);
     setTasks(afterDeletingTasks);
   };
+
   const editTaskById = (id, updatedTitle, updatedTaskDesc) => {
-    const updatedTasks = tasks.map((task) => {
-      if (task.id === id) {
-        return { id, title: updatedTitle, taskDesc: updatedTaskDesc };
-      }
-      return task;
-    });
+    const updatedTasks = tasks.map((task) =>
+      task.id === id ? { id, title: updatedTitle, taskDesc: updatedTaskDesc } : task
+    );
     setTasks(updatedTasks);
   };
 
@@ -37,11 +41,7 @@ function App() {
     <div className="App">
       <TaskCreate onCreate={createTask} />
       <h1>Görevler</h1>
-      <TaskList
-        tasks={tasks}
-        onDelete={deleteTaskById}
-        onUpdate={editTaskById}
-      />
+      <TaskList tasks={tasks} onDelete={deleteTaskById} onUpdate={editTaskById} />
     </div>
   );
 }
